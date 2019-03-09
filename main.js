@@ -22,9 +22,13 @@
 // bilinear transformation
 // const formula = 'A_{ik}B_{jkl}C_{il}'
 // const outputIndices = 'ij'
+// TODO: trzeba dodać rysowanie pętli
 // trace
 // const formula = 'A_{ii}'
 // const outputIndices = ''
+
+// const formula = 'A_{ik}B_{jkl}C_{il}D_{jz}'
+// const outputIndices = 'iz'
 
 document.getElementById('draw').addEventListener('click', () => {
     // inputs

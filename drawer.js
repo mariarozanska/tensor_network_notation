@@ -51,7 +51,7 @@ function draw(tensors, contractions) {
         .data(tensors)
         .enter().append("circle")
         .attr("class", "tensor")
-        .attr("r", 10)
+        .attr("r", 12)
         .attr("cx", (d) => xScale(d.x))
         .attr("cy", (d) => yScale(d.y))
         .style("fill", (d) => colorScale(d.name));
@@ -61,7 +61,7 @@ function draw(tensors, contractions) {
         .enter().append("text")
         .attr("class", "tensor-label")
         .attr("x", (d) => xScale(d.x))
-        .attr("y", (d) => yScale(d.y - 0.4))
+        .attr("y", (d) => yScale(d.y + 0.1))
         .text((d) => d.name);
 
     svg.selectAll(".contraction-label")

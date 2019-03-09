@@ -28,7 +28,7 @@ function TNN() {
     }
 
 
-    function getDirectionOfOuterEdge(i, contractions, tensors, numberOfVariables) {
+    function getDirectionOfOuterEdge(i, contractions, tensors, maxx) {
         const tensor = tensors[i]
         const tensorTargets = []
         contractions.forEach((edge) => {
@@ -36,11 +36,10 @@ function TNN() {
                 tensorTargets.push(edge.target)
             }
         })
-        // TODO: trzeba zmienić dla bardziej złożonych diagramów (wieloliniowych)
         let direction = 'up'
-        if ((i == 0) && (tensorTargets.indexOf('left') == -1)) {
+        if ((tensor.x == 0) && (tensorTargets.indexOf('left') == -1)) {
             direction = 'left'
-        } else if ((i == numberOfVariables - 1) && (tensorTargets.indexOf('right') == -1)) {
+        } else if ((tensor.x == maxx) && (tensorTargets.indexOf('right') == -1)) {
             direction = 'right'
         } else if (tensorTargets.indexOf('down') == -1) {
             direction = 'down'
@@ -50,15 +49,81 @@ function TNN() {
 
 
     // add outer edges related to the i-th variable to contractions
-    function addOuterEdges(i, indices, tensors, contractions, outputIndices) {
+    function addOuterEdges(i, indices, tensors, contractions, outputIndices, maxx) {
         indices[i].forEach((index) => {
             if (outputIndices.indexOf(index) != -1) {
-                const direction = getDirectionOfOuterEdge(i, contractions, tensors, indices.length)
+                const direction = getDirectionOfOuterEdge(i, contractions, tensors, maxx)
                 const outerEdge = { source: tensors[i], target: direction, name: index }
                 contractions.push(outerEdge)
             }
         })
     }
+
+
+    // TODO: przetestować bardziej złożone przypadki - czy przypadkiem nie będzie trzeba przestawiać zmiennych
+    function addNode(name, i, tensors, neighbours, outers, frame) {
+        let y = tensors.length
+        let x = 0
+        if (tensors.length == 0 && outers.indexOf(name) == -1) {
+            y = y + 1
+        } else if (frame[0][0] == '_' && outers.indexOf(name) != -1) {
+            y = 0
+            x = 0
+        } else if (tensors.length != 0) {
+            neighbours[i].forEach((neighbour) => {
+                tensors.forEach((tensor) => {
+                    if (tensor.name == neighbour) {
+                        if (frame[tensor.y][tensor.x + 1] == '_') {
+                            x = tensor.x + 1
+                            y = tensor.y
+                        } else if (frame[tensor.y + 1][tensor.x] == '_'){
+                            x = tensor.x
+                            y = tensor.y +1
+                        } else if (frame[tensor.y + 1][tensor.x + 1] == '_') {
+                            x = tensor.x + 1
+                            y = tensor.y + 1
+                        }
+                    }
+                })
+            })
+        }
+        frame[y][x] = name
+        const node = { name: name, x: x, y: y }
+        tensors.push(node)
+    }
+
+
+    // get names of variables which have outer edges
+    function getOuters(names, indices, outputIndices) {
+        const outers = []
+        indices.forEach((inds, i) => {
+            inds.forEach((idx) => {
+                if (outputIndices.indexOf(idx) != -1) {
+                    outers.push(names[i])
+                }
+            })
+        })
+        return outers
+    }
+
+
+    // get names of adjacent variables for every variables
+    function getNeighbours(names, indices, outputIndices) {
+        const neighbours = []
+        indices.forEach((indsI, i) => {
+            const neighboursI = []
+            for (let j = 0; j < i; j++) {
+                indsI.forEach((idx) => {
+                    if (indices[j].includes(idx) && outputIndices.indexOf(idx) == -1) {
+                        neighboursI.push(names[j])
+                    }
+                })
+            }
+            neighbours.push(neighboursI)
+        })
+        return neighbours
+    }
+
 
     return {
         getData: (formula, outputIndices) => {
@@ -66,13 +131,19 @@ function TNN() {
 
             const tensors = []
             const contractions = []
+            const frame = Array(names.length).fill().map(() => Array(names.length).fill('_'))
+            const outers = getOuters(names, indices, outputIndices)
+            const neighbours = getNeighbours(names, indices, outputIndices)
+
             names.forEach((name, i) => {
-                // TODO: trzeba zmienić dla bardziej złożonych diagramów (wieloliniowych)
-                const node = { name: name, x: i, y: 0 }
-                tensors.push(node)
+                addNode(name, i, tensors, neighbours, outers, frame)
                 addInnerEdges(i, indices, tensors, contractions, outputIndices)
-                addOuterEdges(i, indices, tensors, contractions, outputIndices)
             })
+
+            const maxx = Math.max.apply(Math, tensors.map(tensor => tensor.x))
+            for (let i = 0; i < tensors.length; i++) {
+                addOuterEdges(i, indices, tensors, contractions, outputIndices, maxx)
+            }
 
             return { tensors, contractions }
         }
