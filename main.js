@@ -29,6 +29,8 @@
 
 // const formula = 'A_{ik}B_{jkl}C_{il}D_{jz}'
 // const outputIndices = 'iz'
+// const formula = 'A_{ijkl}B_{lponm}C_{jq}D_{on}F_{pkq}'
+// const outputIndices = 'im'
 
 document.getElementById('draw').addEventListener('click', () => {
     // inputs

@@ -36,6 +36,7 @@ function TNN() {
                 tensorTargets.push(edge.target)
             }
         })
+        // TODO: jeszcze uwzględnić położenie y (może skorzystać z frame)
         let direction = 'up'
         if ((tensor.x == 0) && (tensorTargets.indexOf('left') == -1)) {
             direction = 'left'
@@ -60,7 +61,7 @@ function TNN() {
     }
 
 
-    // TODO: przetestować bardziej złożone przypadki - czy przypadkiem nie będzie trzeba przestawiać zmiennych
+    // TODO: trzeba przestawiać zmienne, żeby nie było przecinających się krawędzi
     function addNode(name, i, tensors, neighbours, outers, frame) {
         let y = tensors.length
         let x = 0
