@@ -60,11 +60,12 @@ function TNN() {
 
 
     // TODO: trzeba przestawiać zmienne, żeby nie było przecinających się krawędzi
-    // TODO: trzeba użyć frame, żeby nie nakładały się pola
+    // TODO: trzeba zmieniać położenie tensorów, które leżą na drodze do innych, a nie są sąsiadami
     function addNode(name, i, tensors, neighbours, outers, frame) {
         let y = tensors.length
         let x = 0
-        if (tensors.length == 0 && outers.indexOf(name) == -1) {
+        const isNeighbour = neighbours[i].some(n => tensors.map(t => t.name).includes(n))
+        if ((tensors.length == 0 || !isNeighbour) && outers.indexOf(name) == -1) {
             y = y + 1
         } else if (frame[0][0] == '_' && outers.indexOf(name) != -1) {
             y = 0
@@ -107,18 +108,19 @@ function TNN() {
     }
 
 
+    // TODO: refactoring
     // get names of adjacent variables for each variable
     function getNeighbours(names, indices, outputIndices) {
         const neighbours = []
         indices.forEach((indsI, i) => {
             const neighboursI = []
-            for (let j = 0; j < i; j++) {
-                indsI.forEach((idx) => {
-                    if (indices[j].includes(idx) && outputIndices.indexOf(idx) == -1) {
+            indsI.forEach((idx) => {
+                indices.forEach((indsJ, j) => {
+                    if (indsJ.includes(idx) && outputIndices.indexOf(idx) == -1 && i != j) {
                         neighboursI.push(names[j])
                     }
                 })
-            }
+            })
             neighbours.push(neighboursI)
         })
         return neighbours
