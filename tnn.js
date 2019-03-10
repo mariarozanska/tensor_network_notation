@@ -27,33 +27,31 @@ function TNN() {
         })
     }
 
-
-    function getDirectionOfOuterEdge(i, contractions, tensors, maxx) {
+    
+    function getDirectionOfOuterEdge(i, tensors, frame) {
+        const maxx = Math.max.apply(Math, tensors.map(tensor => tensor.x))
+        const maxy = Math.max.apply(Math, tensors.map(tensor => tensor.y))
         const tensor = tensors[i]
-        const tensorTargets = []
-        contractions.forEach((edge) => {
-            if (edge.source == tensor) {
-                tensorTargets.push(edge.target)
-            }
-        })
-        // TODO: jeszcze uwzględnić położenie y (może skorzystać z frame)
-        let direction = 'up'
-        if ((tensor.x == 0) && (tensorTargets.indexOf('left') == -1)) {
+
+        let direction
+        if (tensor.x == 0 || frame[tensor.y][tensor.x - 1] == '_') {
             direction = 'left'
-        } else if ((tensor.x == maxx) && (tensorTargets.indexOf('right') == -1)) {
+        } else if (tensor.x == maxx || frame[tensor.y][tensor.x + 1] == '_') {
             direction = 'right'
-        } else if (tensorTargets.indexOf('down') == -1) {
+        } else if (tensor.y == maxy || frame[tensor.y + 1][tensor.x] == '_') {
             direction = 'down'
+        } else {
+            direction = 'up'
         }
         return direction
     }
 
 
     // add outer edges related to the i-th variable to contractions
-    function addOuterEdges(i, indices, tensors, contractions, outputIndices, maxx) {
+    function addOuterEdges(i, indices, tensors, contractions, outputIndices, frame) {
         indices[i].forEach((index) => {
             if (outputIndices.indexOf(index) != -1) {
-                const direction = getDirectionOfOuterEdge(i, contractions, tensors, maxx)
+                const direction = getDirectionOfOuterEdge(i, tensors, frame)
                 const outerEdge = { source: tensors[i], target: direction, name: index }
                 contractions.push(outerEdge)
             }
@@ -62,6 +60,7 @@ function TNN() {
 
 
     // TODO: trzeba przestawiać zmienne, żeby nie było przecinających się krawędzi
+    // TODO: trzeba użyć frame, żeby nie nakładały się pola
     function addNode(name, i, tensors, neighbours, outers, frame) {
         let y = tensors.length
         let x = 0
@@ -108,7 +107,7 @@ function TNN() {
     }
 
 
-    // get names of adjacent variables for every variables
+    // get names of adjacent variables for each variable
     function getNeighbours(names, indices, outputIndices) {
         const neighbours = []
         indices.forEach((indsI, i) => {
@@ -141,9 +140,8 @@ function TNN() {
                 addInnerEdges(i, indices, tensors, contractions, outputIndices)
             })
 
-            const maxx = Math.max.apply(Math, tensors.map(tensor => tensor.x))
             for (let i = 0; i < tensors.length; i++) {
-                addOuterEdges(i, indices, tensors, contractions, outputIndices, maxx)
+                addOuterEdges(i, indices, tensors, contractions, outputIndices, frame)
             }
 
             return { tensors, contractions }
