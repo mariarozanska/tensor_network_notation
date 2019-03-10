@@ -34,11 +34,11 @@ function TNN() {
         const tensor = tensors[i]
 
         let direction
-        if (tensor.x == 0 || frame[tensor.y][tensor.x - 1] == '_') {
+        if (tensor.x == 0 || frame[tensor.y][tensor.x - 1] == null) {
             direction = 'left'
-        } else if (tensor.x == maxx || frame[tensor.y][tensor.x + 1] == '_') {
+        } else if (tensor.x == maxx || frame[tensor.y][tensor.x + 1] == null) {
             direction = 'right'
-        } else if (tensor.y == maxy || frame[tensor.y + 1][tensor.x] == '_') {
+        } else if (tensor.y == maxy || frame[tensor.y + 1][tensor.x] == null) {
             direction = 'down'
         } else {
             direction = 'up'
@@ -62,25 +62,25 @@ function TNN() {
     // TODO: trzeba przestawiać zmienne, żeby nie było przecinających się krawędzi
     // TODO: trzeba zmieniać położenie tensorów, które leżą na drodze do innych, a nie są sąsiadami
     function addNode(name, i, tensors, neighbours, outers, frame) {
-        let y = tensors.length
+        let y = tensors.length == 0 ? 0 : Math.max.apply(Math, tensors.map(tensor => tensor.y))
         let x = 0
         const isNeighbour = neighbours[i].some(n => tensors.map(t => t.name).includes(n))
         if ((tensors.length == 0 || !isNeighbour) && outers.indexOf(name) == -1) {
             y = y + 1
-        } else if (frame[0][0] == '_' && outers.indexOf(name) != -1) {
+        } else if (frame[0][0] == null && outers.indexOf(name) != -1) {
             y = 0
             x = 0
         } else if (tensors.length != 0) {
             neighbours[i].forEach((neighbour) => {
                 tensors.forEach((tensor) => {
                     if (tensor.name == neighbour) {
-                        if (frame[tensor.y][tensor.x + 1] == '_') {
+                        if (frame[tensor.y][tensor.x + 1] == null) {
                             x = tensor.x + 1
                             y = tensor.y
-                        } else if (frame[tensor.y + 1][tensor.x] == '_'){
+                        } else if (frame[tensor.y + 1][tensor.x] == null){
                             x = tensor.x
                             y = tensor.y +1
-                        } else if (frame[tensor.y + 1][tensor.x + 1] == '_') {
+                        } else if (frame[tensor.y + 1][tensor.x + 1] == null) {
                             x = tensor.x + 1
                             y = tensor.y + 1
                         }
@@ -133,7 +133,7 @@ function TNN() {
 
             const tensors = []
             const contractions = []
-            const frame = Array(names.length).fill().map(() => Array(names.length).fill('_'))
+            const frame = Array(names.length).fill().map(() => Array(names.length).fill(null))
             const outers = getOuters(names, indices, outputIndices)
             const neighbours = getNeighbours(names, indices, outputIndices)
 

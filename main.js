@@ -31,6 +31,7 @@
 // const outputIndices = 'iz'
 // const formula = 'A_{ijkl}B_{lponm}C_{jq}D_{on}F_{pkq}'
 // const outputIndices = 'im'
+// TODO: D_{on}F_{pkq}A_{ijkl}B_{lponm}C_{jq} - przechodzenie przez tensor, który nie jest sąsiadem
 
 document.getElementById('draw').addEventListener('click', () => {
     // inputs
